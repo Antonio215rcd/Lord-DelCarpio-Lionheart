@@ -99,7 +99,7 @@ button.on{background:linear-gradient(#9a1f33,#6a1220);color:#f6ecd2;box-shadow:i
 .codex h2{color:#e9c872;text-shadow:0 2px 4px #000}
 .frame,.box{border:1px solid var(--gold);outline:1px solid var(--gold);outline-offset:-7px;border-radius:2px}
 .box{background:linear-gradient(160deg,#fbf3dc,#ecdcae)}
-#pmd{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:12;padding:16px}#pmd.show{display:flex}#pmd .box{text-align:center;max-width:380px}#pmd p{font-size:21px;margin:6px 0 16px}#pmd .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+#pmd{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:60;padding:16px}#pmd.show{display:flex}#pmd .box{text-align:center;max-width:380px}#pmd p{font-size:21px;margin:6px 0 16px}#pmd .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 /* ---- Pomodoro ---- */
 #pomo{max-width:760px;margin:10px auto 36px;background:linear-gradient(#17294f,#0a1228);color:#f6ecd2;border:1px solid var(--gold);outline:1px solid var(--gold);outline-offset:-6px;border-radius:2px;box-shadow:0 0 0 3px #101c3acc,0 10px 24px #000a;padding:16px 14px calc(16px + env(safe-area-inset-bottom,0px));font-family:'Cinzel',Georgia,serif}
 .pm-row{display:flex;flex-wrap:wrap;gap:8px 14px;justify-content:center;align-items:center;max-width:1200px;margin:0 auto}
@@ -112,6 +112,17 @@ button.on{background:linear-gradient(#9a1f33,#6a1220);color:#f6ecd2;box-shadow:i
 .pm-vol{display:flex;align-items:center;gap:6px;font-size:13px;letter-spacing:1px;color:#e9c872}.pm-vol input{width:90px;accent-color:#c9a24a}
 #pmset input{width:64px;font:inherit;font-size:16px;padding:4px;border:1px solid var(--gold);background:#fbf3dc;color:var(--ink);border-radius:2px;text-align:center}
 @media(max-width:700px){#pmt{font-size:28px}}
+/* ---- Pomodoro en modo enfoque (pantalla completa) ---- */
+body.pmfs{overflow:hidden}
+#pomo.fs{position:fixed;inset:0;z-index:50;max-width:none;margin:0;border-radius:0;outline-offset:-10px;box-shadow:none;display:flex;flex-direction:column;justify-content:center;align-items:center;overflow:auto;background:radial-gradient(ellipse at center,#17294f 0%,#0a1228 75%);padding:60px 16px calc(24px + env(safe-area-inset-bottom,0px))}
+#pomo.fs>h2{display:none}
+#pomo.fs .pm-row{flex-direction:column;gap:clamp(14px,3vh,30px);max-width:100%}
+#pomo.fs #pmt{font-size:clamp(72px,26vw,300px);letter-spacing:.04em;min-width:0;line-height:1}
+@media(min-width:900px){#pomo.fs #pmt{font-size:clamp(120px,24vh,300px)}}
+#pomo.fs .pm-modes button,#pomo.fs .pm-ctl button{font-size:clamp(13px,2.2vh,18px);padding:8px 16px}
+#pomo.fs #pmc{font-size:clamp(15px,2.6vh,22px)}
+#pomo.fs #pmfs{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));left:12px;z-index:51}
+#pomo.fs #pmset{margin-top:20px}
 @media(max-width:700px){h1{letter-spacing:1px;font-size:clamp(24px,7.2vw,34px)}#pomo{margin-left:12px;margin-right:12px}}
 /* ---- Ventanas más amplias en navegador de escritorio ---- */
 @media(min-width:900px){
@@ -246,7 +257,7 @@ main{max-width:1500px;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));g
   <div class="pm-row">
     <div class="pm-modes"><button data-m="0" class="on">Enfoque</button><button data-m="1">Descanso</button><button data-m="2">Largo</button></div>
     <div id="pmt" aria-live="off">25:00</div>
-    <div class="pm-ctl"><button id="pmgo">▶ Iniciar</button><button id="pmrs" title="Reiniciar">↺</button><button id="pmsk" title="Saltar a la siguiente fase (si estás en Enfoque, cuenta como pomodoro hecho)">⏭ Saltar</button><button id="pmcfg">⚙ Tiempo</button></div>
+    <div class="pm-ctl"><button id="pmgo">▶ Iniciar</button><button id="pmrs" title="Reiniciar">↺</button><button id="pmsk" title="Saltar a la siguiente fase (si estás en Enfoque, cuenta como pomodoro hecho)">⏭ Saltar</button><button id="pmcfg">⚙ Tiempo</button><button id="pmfs" title="Agrandar el Pomodoro y ocultar todo lo demás (Esc para salir)">⛶ Enfocar</button></div>
     <div class="pm-cnt"><button id="pmmin" title="Quitar un pomodoro">−</button><span id="pmc" title="Pomodoros completados hoy">🍅 0</span><button id="pmpls" title="Sumar un pomodoro">+</button></div>
     <label class="pm-vol" title="Volumen de la voz del Pomodoro y de la bienvenida (0 = silencio)">🔊 Voz <input id="pmvol" type="range" min="0" max="100" step="5" value="50"></label>
   </div>
@@ -802,6 +813,22 @@ try{const v=parseFloat(localStorage.getItem("medieval-voz"));if(v>=0&&v<=1)vozVo
   sl.oninput=()=>{vozVol=sl.value/100;setVoz();if(window.WEL)window.WEL.volume=vozAmp();try{localStorage.setItem("medieval-voz",String(vozVol))}catch(e){}};
   sl.onchange=()=>{if(vozAmp())voz("ini")};   // al soltar, suena una muestra a ese volumen
   $("pmcfg").onclick=()=>{const s=$("pmset");s.hidden=!s.hidden};
+  // Modo enfoque: el Pomodoro ocupa toda la pantalla (Esc o el botón para salir)
+  const pomo=$("pomo");
+  function focusMode(on){
+    pomo.classList.toggle("fs",on);document.body.classList.toggle("pmfs",on);
+    $("pmfs").textContent=on?"✕ Salir":"⛶ Enfocar";
+    $("pmfs").title=on?"Volver a la vista normal (Esc)":"Agrandar el Pomodoro y ocultar todo lo demás (Esc para salir)";
+    try{
+      if(on&&!document.fullscreenElement&&document.documentElement.requestFullscreen){const r=document.documentElement.requestFullscreen();if(r&&r.catch)r.catch(()=>{})}
+      else if(!on&&document.fullscreenElement&&document.exitFullscreen){const r=document.exitFullscreen();if(r&&r.catch)r.catch(()=>{})}
+    }catch(e){}
+    if(on)window.scrollTo(0,0);else pomo.scrollIntoView({block:"center"});
+  }
+  $("pmfs").onclick=()=>focusMode(!pomo.classList.contains("fs"));
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&pomo.classList.contains("fs")&&!$("pmd").classList.contains("show"))focusMode(false)});
+  // Si el navegador sale de pantalla completa por su cuenta (p. ej. con Esc), se sale también del modo enfoque
+  document.addEventListener("fullscreenchange",()=>{if(!document.fullscreenElement&&pomo.classList.contains("fs"))focusMode(false)});
   document.querySelectorAll(".pm-modes button").forEach(b=>b.onclick=()=>setMode(+b.dataset.m));
   [0,1,2].forEach(i=>{
     const inp=$("pm"+i);inp.value=P.cfg[i];
